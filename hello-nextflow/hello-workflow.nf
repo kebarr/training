@@ -18,6 +18,23 @@ process sayHello {
 }
 
 /*
+ * Use a text replacement tool to convert the greeting to uppercase
+ */
+process convertToUpper {
+
+    input:
+    path input_file
+
+    output:
+    path "UPPER-${input_file}"
+
+    script:
+    """
+    cat '${input_file}' | tr '[a-z]' '[A-Z]' > 'UPPER-${input_file}'
+    """
+}
+
+/*
  * Pipeline parameters
  */
 params {
@@ -33,9 +50,12 @@ workflow {
                         .map { line -> line[0] }
     // emit a greeting
     sayHello(greeting_ch)
-
+    // convert the greeting to uppercase
+    convertToUpper(sayHello.out)
     publish:
     first_output = sayHello.out
+    uppercased = convertToUpper.out
+
 }
 
 output {
@@ -43,4 +63,5 @@ output {
         path 'hello_workflow'
         mode 'copy'
     }
+
 }
