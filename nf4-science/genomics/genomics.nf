@@ -9,7 +9,7 @@ include { GATK_HAPLOTYPECALLER } from './modules/gatk_haplotypecaller.nf'
  */
 params {
     // Primary input
-    input: Path
+    input//: Path
 
     // Accessory files
     reference: Path
@@ -34,10 +34,11 @@ workflow {
 
     // Create index file for input BAM file
     SAMTOOLS_INDEX(reads_ch)
-
+    // temporary diagnostics
+    reads_ch.view()
+    SAMTOOLS_INDEX.out.view()
     // Call variants from the indexed BAM file
     GATK_HAPLOTYPECALLER(
-        reads_ch,
         SAMTOOLS_INDEX.out,
         ref_file,
         ref_index_file,
@@ -45,14 +46,14 @@ workflow {
         intervals_file
     )
     publish:
-    bam_index = SAMTOOLS_INDEX.out
+    indexed_bam = SAMTOOLS_INDEX.out
     vcf = GATK_HAPLOTYPECALLER.out.vcf
     vcf_idx = GATK_HAPLOTYPECALLER.out.idx
 }
 
 output {
     // Configure publish targets
-    bam_index {
+    indexed_bam {
         path 'bam'
     }
     vcf {
